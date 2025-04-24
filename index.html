@@ -3,65 +3,111 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Supabase Cloud Journal (with Edit + Delete)</title>
+  <title>Notebook Journal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
-      font-family: sans-serif;
-      background-color: #1a1a1a;
-      color: white;
+      margin: 0;
+      background: #e4e1dc;
+      font-family: 'Georgia', serif;
+      display: flex;
+      justify-content: center;
       padding: 2rem;
+    }
+
+    .notebook {
+      background: repeating-linear-gradient(
+        to bottom,
+        #fff 0px,
+        #fff 29px,
+        #cfcfcf 30px
+      );
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       max-width: 800px;
-      margin: auto;
-    }
-    textarea, input {
       width: 100%;
-      margin-bottom: 1rem;
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: none;
+      padding: 2rem;
+      border-radius: 8px;
+      position: relative;
     }
+
+    .notebook::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -40px;
+      width: 30px;
+      height: 100%;
+      background: repeating-linear-gradient(#999 0, #999 2px, transparent 2px, transparent 8px);
+      border-right: 2px solid #ccc;
+    }
+
+    input, textarea {
+      width: 100%;
+      font-family: 'Courier New', monospace;
+      font-size: 16px;
+      padding: 10px;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.8);
+      box-sizing: border-box;
+    }
+
     textarea {
       height: 200px;
+      resize: vertical;
     }
+
     button {
-      padding: 10px 20px;
-      margin-right: 10px;
-      background: #4caf50;
-      color: white;
+      font-size: 16px;
+      padding: 10px 16px;
+      margin: 0 10px 1rem 0;
       border: none;
       border-radius: 6px;
-      font-size: 16px;
       cursor: pointer;
+      background-color: #4caf50;
+      color: white;
     }
-    .delete-button {
-      background: #e53935;
-    }
+
     .edit-button {
-      background: #2196f3;
+      background-color: #2196f3;
     }
+
+    .delete-button {
+      background-color: #e53935;
+    }
+
     .note {
-      background: #2e2e2e;
-      padding: 1rem;
-      margin-top: 1rem;
+      background: rgba(255, 255, 255, 0.85);
       border-left: 4px solid #4caf50;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 6px;
     }
+
     pre {
       white-space: pre-wrap;
       word-wrap: break-word;
+      font-family: 'Courier New', monospace;
+    }
+
+    h1, h2 {
+      text-align: center;
+      font-family: 'Georgia', serif;
     }
   </style>
 </head>
 <body>
-  <h1>📘 Supabase Cloud Journal</h1>
-  <input type="text" id="title" placeholder="Title (optional)" />
-  <textarea id="text" placeholder="Paste or write your massive note here..."></textarea>
-  <button id="saveButton" onclick="saveNote()">Save Note</button>
+  <div class="notebook">
+    <h1>📓 My Notebook Journal</h1>
+    <input type="text" id="title" placeholder="Title (optional)" />
+    <textarea id="text" placeholder="Write your entry here..."></textarea>
+    <button id="saveButton" onclick="saveNote()">Save Note</button>
 
-  <h2>📚 Saved Notes</h2>
-  <div id="notes"></div>
+    <h2>📚 Notes</h2>
+    <div id="notes"></div>
+  </div>
 
   <script>
     const supabase = window.supabase.createClient(
