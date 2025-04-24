@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -132,22 +133,33 @@
           const div = document.createElement("div");
           div.className = "note";
 
-          const safeTitle = note.title.replace(/\\/g, "\\\\").replace(/`/g, "\\`");
-          const safeText = note.text.replace(/\\/g, "\\\\").replace(/`/g, "\\`");
+          const safeTitle = note.title.replace(/\/g, "\\").replace(/`/g, "\`");
+          const safeText = note.text.replace(/\/g, "\\").replace(/`/g, "\`");
 
-          div.innerHTML = `
+          let contentHTML = `
             <span class="note-title">${note.title}</span><br/>
             ${note.text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}<br/>
-            <button class="edit-button">Edit</button>
-            <button onclick="deleteNote('${note.id}')">Delete</button>
           `;
 
+          if (note.text.length < 100000) {
+            contentHTML += `
+              <button class="edit-button">Edit</button>
+              <button onclick="deleteNote('${note.id}')">Delete</button>
+            `;
+          } else {
+            contentHTML += `<p style="color:#ccc;">(Too massive to edit directly — view only)</p>`;
+          }
+
+          div.innerHTML = contentHTML;
+
           const editButton = div.querySelector(".edit-button");
-          editButton.addEventListener("click", () => {
-            document.getElementById("title").value = note.title;
-            document.getElementById("text").value = note.text;
-            deleteNote(note.id);
-          });
+          if (editButton) {
+            editButton.addEventListener("click", () => {
+              document.getElementById("title").value = note.title;
+              document.getElementById("text").value = note.text;
+              deleteNote(note.id);
+            });
+          }
 
           notesContainer.appendChild(div);
         });
