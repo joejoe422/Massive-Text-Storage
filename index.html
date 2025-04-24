@@ -1,8 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Supabase Cloud Journal (with Delete)</title>
+  <title>Supabase Cloud Journal (with Edit + Delete)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -27,6 +28,7 @@
     }
     button {
       padding: 10px 20px;
+      margin-right: 10px;
       background: #4caf50;
       color: white;
       border: none;
@@ -36,7 +38,9 @@
     }
     .delete-button {
       background: #e53935;
-      margin-top: 10px;
+    }
+    .edit-button {
+      background: #2196f3;
     }
     .note {
       background: #2e2e2e;
@@ -54,7 +58,7 @@
   <h1>📘 Supabase Cloud Journal</h1>
   <input type="text" id="title" placeholder="Title (optional)" />
   <textarea id="text" placeholder="Paste or write your massive note here..."></textarea>
-  <button onclick="saveNote()">Save Note</button>
+  <button id="saveButton" onclick="saveNote()">Save Note</button>
 
   <h2>📚 Saved Notes</h2>
   <div id="notes"></div>
@@ -65,25 +69,50 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzb3NmZ3NtemR1YnFnamNwanVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU0NDQzMjEsImV4cCI6MjA2MTAyMDMyMX0.OFC9FFOkOso8Wa69hgYe9rDJKgii_FCM1RJN1oNHbqM"
     );
 
+    let editingId = null;
+
     async function saveNote() {
       const title = document.getElementById("title").value;
       const text = document.getElementById("text").value;
+      const button = document.getElementById("saveButton");
+
       if (!text.trim()) {
         alert("Please enter some text!");
         return;
       }
 
-      const { data, error } = await supabase
-        .from("notes")
-        .insert([{ title: title || "Untitled", text }]);
+      if (editingId) {
+        const { error } = await supabase
+          .from("notes")
+          .update({ title: title || "Untitled", text })
+          .eq("id", editingId);
 
-      if (error) {
-        alert("Error saving note: " + error.message);
+        if (error) {
+          alert("Error updating note: " + error.message);
+        } else {
+          editingId = null;
+          button.textContent = "Save Note";
+          clearInputs();
+          loadNotes();
+        }
       } else {
-        document.getElementById("title").value = "";
-        document.getElementById("text").value = "";
-        loadNotes();
+        const { error } = await supabase
+          .from("notes")
+          .insert([{ title: title || "Untitled", text }]);
+
+        if (error) {
+          alert("Error saving note: " + error.message);
+        } else {
+          clearInputs();
+          loadNotes();
+        }
       }
+    }
+
+    function clearInputs() {
+      document.getElementById("title").value = "";
+      document.getElementById("text").value = "";
+      document.getElementById("saveButton").textContent = "Save Note";
     }
 
     async function deleteNote(id) {
@@ -102,6 +131,14 @@
       }
     }
 
+    function editNote(id, title, text) {
+      editingId = id;
+      document.getElementById("title").value = title;
+      document.getElementById("text").value = text;
+      document.getElementById("saveButton").textContent = "Update Note";
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     async function loadNotes() {
       const { data, error } = await supabase
         .from("notes")
@@ -118,6 +155,7 @@
           div.innerHTML = `
             <strong>${note.title}</strong>
             <pre>${note.text}</pre>
+            <button class="edit-button" onclick="editNote('${note.id}', \`${note.title.replace(/`/g, '\`')}\`, \`${note.text.replace(/`/g, '\`')}\`)">Edit</button>
             <button class="delete-button" onclick="deleteNote('${note.id}')">Delete</button>
           `;
           notesContainer.appendChild(div);
