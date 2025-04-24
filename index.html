@@ -220,7 +220,7 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    async function loadNotes() {
+async function loadNotes() {
   const { data, error } = await supabase
     .from("notes")
     .select("*")
@@ -249,8 +249,9 @@
     });
   }
 }
-      
-      loadNotes();
+
+
+    loadNotes();
   </script>
 </body>
 </html>
