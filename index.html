@@ -2,181 +2,149 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Massive Text Storage</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #1a1a1a;
-      color: #fff;
-      perspective: 1000px; /* Venice.ai’s global perspective */
-      overflow: visible;
+      background: #121212;
+      font-family: 'Courier New', monospace;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .notebook {
+      position: relative;
+      background: #1f1f1f;
+      border-radius: 10px;
+      padding: 2rem 2rem 2rem 3rem;
+      max-width: 800px;
+      width: 100%;
+      box-shadow: 0 0 15px rgba(0,0,0,0.6);
+      color: white;
+    }
+
+    .spirals {
+      position: absolute;
+      left: 10px;
+      top: 20px;
+      bottom: 20px;
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
+      justify-content: space-between;
     }
-    header, #input-area, .sticky-note, button {
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    .spiral-hole {
+      width: 12px;
+      height: 12px;
+      background: #444;
+      border: 2px solid #222;
+      border-radius: 50%;
+      margin: 6px 0;
     }
-    header {
-      background: #2c2c2c;
-      color: #fff;
-      padding: 1rem;
+
+    h1, h2 {
       text-align: center;
-      transform: translateZ(50px);
-      box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+      font-family: Georgia, serif;
+      color: #ffffff;
     }
-    header:hover {
-      transform: translateZ(70px) rotateX(10deg) rotateY(10deg);
-      box-shadow: 10px 10px 20px rgba(0,0,0,0.5);
-    }
-    h1 {
-      margin: 0;
-      font-size: 2rem;
-    }
-    main {
-      flex: 1;
-      padding: 2rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    #input-area {
-      background: #fff;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      max-width: 700px;
-      margin: 0 auto 2rem;
-      transform: translateZ(50px);
-      transform-style: preserve-3d;
-    }
-    #input-area:hover {
-      transform: translateZ(70px) rotateX(10deg) rotateY(10deg);
-      box-shadow: 10px 10px 20px rgba(0,0,0,0.5);
-    }
+
     input, textarea {
       width: 100%;
-      max-width: 600px;
-      padding: 12px;
-      font-size: 1rem;
-      border: 2px solid #ddd;
-      border-radius: 8px;
-      color: #333;
-      background: #f9f9f9;
-      margin-bottom: 1rem;
       box-sizing: border-box;
-      /* No transform to ensure typing works */
+      padding: 12px;
+      font-size: 16px;
+      font-family: 'Courier New', monospace;
+      border: 1px solid #444;
+      border-radius: 6px;
+      color: white;
+      background-color: #2a2a2a;
+      background-image: repeating-linear-gradient(
+        to bottom,
+        #2a2a2a 0px,
+        #2a2a2a 24px,
+        #333 25px
+      );
+      background-attachment: local;
+      line-height: 25px;
     }
+
     textarea {
-      height: 200px;
+      height: 250px;
       resize: vertical;
     }
+
     button {
-      padding: 12px 24px;
-      font-size: 1rem;
+      padding: 10px 20px;
+      font-size: 16px;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
-      transform: translateZ(50px);
-      box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+      margin-right: 10px;
+      margin-top: 10px;
     }
-    button:hover {
-      transform: translateZ(70px) rotateX(10deg) rotateY(10deg);
-      box-shadow: 10px 10px 20px rgba(0,0,0,0.5);
-    }
-    #saveButton {
-      background: #4caf50;
-      color: #fff;
-    }
+
     .edit-button {
-      background: #2196f3;
-      color: #fff;
+      background-color: #2196f3;
+      color: white;
     }
+
     .delete-button {
-      background: #e53935;
-      color: #fff;
+      background-color: #e53935;
+      color: white;
     }
-    #notes {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1.5rem;
+
+    #saveButton {
+      background-color: #4caf50;
+      color: white;
     }
-    .sticky-note {
-      background: #ffd700;
-      width: 250px;
-      min-height: 250px;
-      padding: 1.5rem;
-      box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
-      border-radius: 10px;
-      transform: translateZ(50px) rotate(2deg);
-      transform-style: preserve-3d;
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .sticky-note:hover {
-      transform: translateZ(70px) rotateX(10deg) rotateY(10deg); /* Venice.ai’s tilt */
-      box-shadow: 10px 10px 20px rgba(0,0,0,0.5);
-    }
-    .sticky-note:nth-child(even) {
-      background: #ff8787;
-      transform: translateZ(50px) rotate(-2deg);
-    }
-    .sticky-note:nth-child(3n) {
-      background: #87cefa;
-      transform: translateZ(50px) rotate(1deg);
-    }
-    .sticky-note-title {
-      font-size: 1.2rem;
-      font-weight: bold;
-      margin-bottom: 0.75rem;
-      word-wrap: break-word;
-      border-bottom: 1px solid rgba(0,0,0,0.1);
-      padding-bottom: 0.5rem;
-    }
-    .sticky-note-text {
-      flex-grow: 1;
+
+    .note {
+      background-image: repeating-linear-gradient(
+        to bottom,
+        #2a2a2a 0px,
+        #2a2a2a 24px,
+        #333 25px
+      );
+      background-attachment: local;
+      padding: 1rem;
+      margin-top: 1rem;
+      border-left: 4px solid #4caf50;
+      border-radius: 6px;
+      line-height: 25px;
       white-space: pre-wrap;
       word-wrap: break-word;
-      font-size: 1rem;
-      margin-bottom: 1rem;
+      font-family: 'Courier New', monospace;
+      color: white;
     }
-    .sticky-note-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 0.5rem;
-    }
-    @media (max-width: 600px) {
-      .sticky-note {
-        width: 100%;
-        max-width: 300px;
-      }
-      #input-area {
-        padding: 1.5rem;
-      }
+
+    .note-title {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      display: block;
     }
   </style>
 </head>
 <body>
-  <header>
+  <div class="notebook">
+    <div class="spirals">
+      <div class="spiral-hole"></div>
+      <div class="spiral-hole"></div>
+      <div class="spiral-hole"></div>
+      <div class="spiral-hole"></div>
+      <div class="spiral-hole"></div>
+      <div class="spiral-hole"></div>
+      <div class="spiral-hole"></div>
+    </div>
     <h1>🖤 Massive Text Storage 🖤</h1>
-  </header>
-  <main>
-    <section id="input-area">
-      <input type="text" id="title" placeholder="Title (optional)" />
-      <textarea id="text" placeholder="Write your note here..."></textarea>
-      <button id="saveButton" onclick="saveNote()">Save Note</button>
-    </section>
-    <section id="notes"></section>
-  </main>
+    <input type="text" id="title" placeholder="Title (optional)" />
+    <textarea id="text" placeholder="Write here and your text will align with the lines..."></textarea>
+    <button id="saveButton" onclick="saveNote()">Save Note</button>
+
+    <h2>📚 Your Notes</h2>
+    <div id="notes"></div>
+  </div>
   <script>
     const supabase = window.supabase.createClient(
       "https://fsosfgsmzdubqgjcpjug.supabase.co",
@@ -195,25 +163,31 @@
         return;
       }
 
-      try {
-        if (editingId) {
-          const { error } = await supabase
-            .from("notes")
-            .update({ title: title || "Untitled", text })
-            .eq("id", editingId);
-          if (error) throw error;
+      if (editingId) {
+        const { error } = await supabase
+          .from("notes")
+          .update({ title: title || "Untitled", text })
+          .eq("id", editingId);
+
+        if (error) {
+          alert("Error updating note: " + error.message);
+        } else {
           editingId = null;
           button.textContent = "Save Note";
-        } else {
-          const { error } = await supabase
-            .from("notes")
-            .insert([{ title: title || "Untitled", text }]);
-          if (error) throw error;
+          clearInputs();
+          loadNotes();
         }
-        clearInputs();
-        loadNotes();
-      } catch (error) {
-        alert("Error saving note: " + error.message);
+      } else {
+        const { error } = await supabase
+          .from("notes")
+          .insert([{ title: title || "Untitled", text }]);
+
+        if (error) {
+          alert("Error saving note: " + error.message);
+        } else {
+          clearInputs();
+          loadNotes();
+        }
       }
     }
 
@@ -222,20 +196,19 @@
       document.getElementById("text").value = "";
       document.getElementById("saveButton").textContent = "Save Note";
     }
-
     async function deleteNote(id) {
       const confirmDelete = confirm("Are you sure you want to delete this note?");
       if (!confirmDelete) return;
 
-      try {
-        const { error } = await supabase
-          .from("notes")
-          .delete()
-          .eq("id", id);
-        if (error) throw error;
-        loadNotes();
-      } catch (error) {
+      const { error } = await supabase
+        .from("notes")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
         alert("Error deleting note: " + error.message);
+      } else {
+        loadNotes();
       }
     }
 
@@ -248,33 +221,27 @@
     }
 
     async function loadNotes() {
-      try {
-        const { data, error } = await supabase
-          .from("notes")
-          .select("*")
-          .order("id", { ascending: false });
-        if (error) throw error;
+      const { data, error } = await supabase
+        .from("notes")
+        .select("*")
+        .order("id", { ascending: false });
 
-        const notesContainer = document.getElementById("notes");
-        notesContainer.innerHTML = "";
+      const notesContainer = document.getElementById("notes");
+      notesContainer.innerHTML = "";
 
-        if (data && data.length > 0) {
-          data.forEach(note => {
-            const div = document.createElement("div");
-            div.className = "sticky-note";
-            div.innerHTML = `
-              <div class="sticky-note-title">${note.title.replace(/</g, '<').replace(/>/g, '>')}</div>
-              <div class="sticky-note-text">${note.text.replace(/</g, '<').replace(/>/g, '>')}</div>
-              <div class="sticky-note-actions">
-                <button class="edit-button" onclick="editNote('${note.id}', \`${note.title.replace(/`/g, '\\`')}\`, \`${note.text.replace(/`/g, '\\`')}\`)">Edit</button>
-                <button class="delete-button" onclick="deleteNote('${note.id}')">Delete</button>
-              </div>
-            `;
-            notesContainer.appendChild(div);
-          });
-        }
-      } catch (error) {
-        alert("Error loading notes: " + error.message);
+      if (data && data.length > 0) {
+        data.forEach(note => {
+          const div = document.createElement("div");
+          div.className = "note";
+          div.innerHTML = `
+            <span class="note-title">${note.title}</span>
+            ${note.text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+            <br/>
+            <button class="edit-button" onclick="editNote('${note.id}', \`${note.title.replace(/`/g, '\\`')}\`, \`${note.text.replace(/`/g, '\\`')}\`)">Edit</button>
+            <button class="delete-button" onclick="deleteNote('${note.id}')">Delete</button>
+          `;
+          notesContainer.appendChild(div);
+        });
       }
     }
 
