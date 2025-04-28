@@ -12,7 +12,7 @@
       padding: 0;
       background: #1a1a1a;
       color: #fff;
-      perspective: 1000px; /* Venice.ai’s global perspective */
+      perspective: 1000px;
       overflow: visible;
       display: flex;
       flex-direction: column;
@@ -71,7 +71,6 @@
       background: #f9f9f9;
       margin-bottom: 1rem;
       box-sizing: border-box;
-      /* No transform to ensure typing works */
     }
     textarea {
       height: 200px;
@@ -123,7 +122,7 @@
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
     .sticky-note:hover {
-      transform: translateZ(70px) rotateX(10deg) rotateY(10deg); /* Venice.ai’s tilt */
+      transform: translateZ(70px) rotateX(10deg) rotateY(10deg);
       box-shadow: 10px 10px 20px rgba(0,0,0,0.5);
     }
     .sticky-note:nth-child(even) {
@@ -173,7 +172,7 @@
     <section id="input-area">
       <input type="text" id="title" placeholder="Title (optional)" />
       <textarea id="text" placeholder="Write your note here..."></textarea>
-      <button id="saveButton" onclick="saveNote()">Save Note</button>
+      <button id="saveButton">Save Note</button>
     </section>
     <section id="notes"></section>
   </main>
@@ -279,6 +278,7 @@
     }
 
     loadNotes();
+    document.getElementById("saveButton").addEventListener("click", saveNote);
   </script>
 </body>
 </html>
