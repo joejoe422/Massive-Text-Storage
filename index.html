@@ -13,10 +13,9 @@
       background: #1a1a1a;
       color: #fff;
       perspective: 1000px;
-      overflow: visible;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
     }
     header, #input-area, .sticky-note, button {
       transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -31,7 +30,6 @@
     }
     header:hover {
       transform: translateZ(70px) rotateX(10deg) rotateY(10deg);
-      box-shadow: 10px 10px 20px rgba(0,0,0,0.5);
     }
     h1 {
       margin: 0;
@@ -48,17 +46,12 @@
       padding: 2rem;
       border-radius: 12px;
       box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       max-width: 700px;
       margin: 0 auto 2rem;
       transform: translateZ(50px);
-      transform-style: preserve-3d;
     }
     #input-area:hover {
       transform: translateZ(70px) rotateX(10deg) rotateY(10deg);
-      box-shadow: 10px 10px 20px rgba(0,0,0,0.5);
     }
     input, textarea {
       width: 100%;
@@ -71,6 +64,8 @@
       background: #f9f9f9;
       margin-bottom: 1rem;
       box-sizing: border-box;
+      pointer-events: auto;
+      z-index: 10;
     }
     textarea {
       height: 200px;
@@ -87,7 +82,6 @@
     }
     button:hover {
       transform: translateZ(70px) rotateX(10deg) rotateY(10deg);
-      box-shadow: 10px 10px 20px rgba(0,0,0,0.5);
     }
     #saveButton {
       background: #4caf50;
@@ -115,7 +109,6 @@
       box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
       border-radius: 10px;
       transform: translateZ(50px) rotate(2deg);
-      transform-style: preserve-3d;
       color: #333;
       display: flex;
       flex-direction: column;
@@ -177,6 +170,7 @@
     <section id="notes"></section>
   </main>
   <script>
+    alert("Script loaded!"); // Debug to confirm script runs
     const supabase = window.supabase.createClient(
       "https://fsosfgsmzdubqgjcpjug.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzb3NmZ3NtemR1YnFnamNwanVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU0NDQzMjEsImV4cCI6MjA2MTAyMDMyMX0.OFC9FFOkOso8Wa69hgYe9rDJKgii_FCM1RJN1oNHbqM"
