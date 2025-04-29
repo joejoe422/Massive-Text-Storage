@@ -58,8 +58,9 @@
     </div>
     <script type="module">
         import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js';
+        const { createClient } = Supabase; // Use the global Supabase object
 
-        const supabase = Supabase.createClient(
+        const supabase = createClient(
             'https://fsosfgsmzdubqgjcpjug.supabase.co',
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzb3NmZ3NtemR1YnFnamNwanVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU0NDQzMjEsImV4cCI6MjA2MTAyMDMyMX0.OFC9FFOkOso8Wa69hgYe9rDJKgii_FCM1RJN1oNHbqM'
         );
