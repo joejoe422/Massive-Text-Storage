@@ -1,136 +1,251 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Notes App</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
-    <script type="module" src="https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js"></script>
-    <style>
-        body { margin: 0; overflow: hidden; background: #1a1a1a; }
-        #canvas { position: fixed; top: 0; left: 0; }
-        #ui { position: absolute; top: 20px; left: 20px; z-index: 10; }
-        .card { 
-            background: rgba(255, 255, 255, 0.9); 
-            border-radius: 12px; 
-            padding: 20px; 
-            transform: perspective(1000px) rotateX(5deg) rotateY(5deg); 
-            transition: transform 0.3s; 
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); 
-        }
-        .card:hover { transform: perspective(1000px) rotateX(0deg) rotateY(0deg); }
-        .saved-note { 
-            background: rgba(255, 255, 255, 0.85); 
-            border-radius: 8px; 
-            padding: 15px; 
-            margin-top: 10px; 
-            transform: perspective(1000px) rotateX(3deg); 
-            transition: transform 0.3s; 
-        }
-        .saved-note:hover { transform: perspective(1000px) rotateX(0deg); }
-        input, textarea, button { 
-            width: 100%; 
-            padding: 10px; 
-            margin-bottom: 10px; 
-            border: 1px solid #ccc; 
-            border-radius: 6px; 
-            font-size: 16px; 
-        }
-        button { 
-            background: #007bff; 
-            color: white; 
-            border: none; 
-            cursor: pointer; 
-        }
-        button:hover { background: #0056b3; }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Massive Text Storage</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      background: #121212;
+      font-family: 'Courier New', monospace;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .notebook {
+      position: relative;
+      background: #1f1f1f;
+      border-radius: 10px;
+      padding: 2rem 2rem 2rem 3rem;
+      max-width: 800px;
+      width: 100%;
+      box-shadow: 0 0 15px rgba(0,0,0,0.6);
+      color: white;
+    }
+
+    .spirals {
+      position: absolute;
+      left: 10px;
+      top: 20px;
+      bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .spiral-hole {
+      width: 12px;
+      height: 12px;
+      background: #444;
+      border: 2px solid #222;
+      border-radius: 50%;
+      margin: 6px 0;
+    }
+
+    h1, h2 {
+      text-align: center;
+      font-family: Georgia, serif;
+      color: #ffffff;
+    }
+
+    input, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      font-size: 16px;
+      font-family: 'Courier New', monospace;
+      border: 1px solid #444;
+      border-radius: 6px;
+      color: white;
+      background-color: #2a2a2a;
+      background-image: repeating-linear-gradient(
+        to bottom,
+        #2a2a2a 0px,
+        #2a2a2a 24px,
+        #333 25px
+      );
+      background-attachment: local;
+      line-height: 25px;
+    }
+
+    textarea {
+      height: 250px;
+      resize: vertical;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-top: 10px;
+    }
+
+    .edit-button {
+      background-color: #2196f3;
+      color: white;
+    }
+
+    .delete-button {
+      background-color: #e53935;
+      color: white;
+    }
+
+    #saveButton {
+      background-color: #4caf50;
+      color: white;
+    }
+
+    .note {
+      background-image: repeating-linear-gradient(
+        to bottom,
+        #2a2a2a 0px,
+        #2a2a2a 24px,
+        #333 25px
+      );
+      background-attachment: local;
+      padding: 1rem;
+      margin-top: 1rem;
+      border-left: 4px solid #4caf50;
+      border-radius: 6px;
+      line-height: 25px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-family: 'Courier New', monospace;
+      color: white;
+    }
+
+    .note-title {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+  </style>
 </head>
 <body>
-    <div id="canvas"></div>
-    <div id="ui" class="max-w-md">
-        <div class="card">
-            <input id="title" type="text" placeholder="Title">
-            <textarea id="text" placeholder="Your note..." rows="4"></textarea>
-            <button id="save">Save</button>
-        </div>
-        <div id="saved" class="mt-4"></div>
+  <div class="notebook">
+    <div class="spirals">
+      <div class="spiral-hole"></div>
+      <div class="spiral-hole"></div>
+      <div class="spiral-hole"></div>
+      <div class="spiral-hole"></div>
+      <div class="spiral-hole"></div>
+      <div class="spiral-hole"></div>
+      <div class="spiral-hole"></div>
     </div>
-    <script type="module">
-        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js';
+    <h1>🖤 Massive Text Storage 🖤</h1>
+    <input type="text" id="title" placeholder="Title (optional)" />
+    <textarea id="text" placeholder="Write here and your text will align with the lines..."></textarea>
+    <button id="saveButton" onclick="saveNote()">Save Note</button>
 
-        const supabase = Supabase.createClient(
-            'https://fsosfgsmzdubqgjcpjug.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzb3NmZ3NtemR1YnFnamNwanVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU0NDQzMjEsImV4cCI6MjA2MTAyMDMyMX0.OFC9FFOkOso8Wa69hgYe9rDJKgii_FCM1RJN1oNHbqM'
-        );
+    <h2>📚 Your Notes</h2>
+    <div id="notes"></div>
+  </div>
+  <script>
+    const supabase = window.supabase.createClient(
+      "https://fsosfgsmzdubqgjcpjug.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzb3NmZ3NtemR1YnFnamNwanVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU0NDQzMjEsImV4cCI6MjA2MTAyMDMyMX0.OFC9FFOkOso8Wa69hgYe9rDJKgii_FCM1RJN1oNHbqM"
+    );
 
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.getElementById('canvas').appendChild(renderer.domElement);
+    let editingId = null;
 
-        const geometry = new THREE.TorusKnotGeometry(2, 0.4, 100, 16);
-        const material = new THREE.MeshStandardMaterial({ color: 0x007bff, wireframe: true });
-        const torus = new THREE.Mesh(geometry, material);
-        scene.add(torus);
+    async function saveNote() {
+      const title = document.getElementById("title").value;
+      const text = document.getElementById("text").value;
+      const button = document.getElementById("saveButton");
 
-        const light = new THREE.PointLight(0xffffff, 1, 100);
-        light.position.set(10, 10, 10);
-        scene.add(light);
+      if (!text.trim()) {
+        alert("Please enter some text!");
+        return;
+      }
 
-        camera.position.z = 10;
+      if (editingId) {
+        const { error } = await supabase
+          .from("notes")
+          .update({ title: title || "Untitled", text })
+          .eq("id", editingId);
 
-        function animate() {
-            requestAnimationFrame(animate);
-            torus.rotation.x += 0.01;
-            torus.rotation.y += 0.01;
-            renderer.render(scene, camera);
+        if (error) {
+          alert("Error updating note: " + error.message);
+        } else {
+          editingId = null;
+          button.textContent = "Save Note";
+          clearInputs();
+          loadNotes();
         }
-        animate();
+      } else {
+        const { error } = await supabase
+          .from("notes")
+          .insert([{ title: title || "Untitled", text }]);
 
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        const titleInput = document.getElementById('title');
-        const textInput = document.getElementById('text');
-        const saveButton = document.getElementById('save');
-        const savedDiv = document.getElementById('saved');
-
-        async function loadNotes() {
-            const { data, error } = await supabase.from('notes').select('*');
-            if (error) {
-                console.error('Error loading notes:', error);
-                return;
-            }
-            savedDiv.innerHTML = '';
-            data.forEach(note => {
-                const noteEl = document.createElement('div');
-                noteEl.className = 'saved-note';
-                noteEl.innerHTML = `<h3 class="font-bold">${note.title}</h3><p>${note.text}</p>`;
-                savedDiv.appendChild(noteEl);
-            });
+        if (error) {
+          alert("Error saving note: " + error.message);
+        } else {
+          clearInputs();
+          loadNotes();
         }
+      }
+    }
 
-        saveButton.addEventListener('click', async () => {
-            const title = titleInput.value.trim();
-            const text = textInput.value.trim();
-            if (title && text) {
-                const { error } = await supabase.from('notes').insert([{ title, text }]);
-                if (error) {
-                    console.error('Error saving note:', error);
-                } else {
-                    titleInput.value = '';
-                    textInput.value = '';
-                    loadNotes();
-                }
-            }
-        });
+    function clearInputs() {
+      document.getElementById("title").value = "";
+      document.getElementById("text").value = "";
+      document.getElementById("saveButton").textContent = "Save Note";
+    }
+    async function deleteNote(id) {
+      const confirmDelete = confirm("Are you sure you want to delete this note?");
+      if (!confirmDelete) return;
 
+      const { error } = await supabase
+        .from("notes")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        alert("Error deleting note: " + error.message);
+      } else {
         loadNotes();
-    </script>
+      }
+    }
+
+    function editNote(id, title, text) {
+      editingId = id;
+      document.getElementById("title").value = title;
+      document.getElementById("text").value = text;
+      document.getElementById("saveButton").textContent = "Update Note";
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function loadNotes() {
+      const { data, error } = await supabase
+        .from("notes")
+        .select("*")
+        .order("id", { ascending: false });
+
+      const notesContainer = document.getElementById("notes");
+      notesContainer.innerHTML = "";
+
+      if (data && data.length > 0) {
+        data.forEach(note => {
+          const div = document.createElement("div");
+          div.className = "note";
+          div.innerHTML = `
+            <span class="note-title">${note.title}</span>
+            ${note.text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+            <br/>
+            <button class="edit-button" onclick="editNote('${note.id}', \`${note.title.replace(/`/g, '\\`')}\`, \`${note.text.replace(/`/g, '\\`')}\`)">Edit</button>
+            <button class="delete-button" onclick="deleteNote('${note.id}')">Delete</button>
+          `;
+          notesContainer.appendChild(div);
+        });
+      }
+    }
+
+    loadNotes();
+  </script>
 </body>
 </html>
